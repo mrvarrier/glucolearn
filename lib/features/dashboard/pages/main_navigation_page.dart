@@ -21,7 +21,7 @@ class MainNavigationPage extends ConsumerWidget {
     return Scaffold(
       appBar: isAdmin ? AppBar(
         title: const Text('Patient View'),
-        backgroundColor: AppColors.warning.withOpacity(0.1),
+        backgroundColor: AppColors.warning.withValues(alpha: 0.1),
         actions: [
           TextButton.icon(
             onPressed: () => context.go('/admin'),
