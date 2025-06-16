@@ -7,7 +7,6 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/models/user.dart';
-import '../../../core/services/auth_service.dart';
 import '../providers/auth_providers.dart';
 
 class SignupPage extends ConsumerStatefulWidget {

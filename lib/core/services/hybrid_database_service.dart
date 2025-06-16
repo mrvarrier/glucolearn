@@ -1,8 +1,8 @@
 import 'package:sqflite/sqflite.dart';
 import 'database_service.dart';
 import 'firestore_service.dart';
-import '../models/user.dart';
 import '../models/content.dart';
+import '../utils/logger.dart';
 
 class HybridDatabaseService {
   static final HybridDatabaseService _instance = HybridDatabaseService._internal();
@@ -26,7 +26,7 @@ class HybridDatabaseService {
       return firestoreContent;
     } catch (e) {
       // Fallback to local database if offline
-      print('Firestore unavailable, using local cache: $e');
+      AppLogger.warning('Firestore unavailable, using local cache: $e');
       return await _getLocalContent();
     }
   }
@@ -35,7 +35,7 @@ class HybridDatabaseService {
     try {
       return await _firestore.getContentByCategory(category);
     } catch (e) {
-      print('Firestore unavailable, using local cache: $e');
+      AppLogger.warning('Firestore unavailable, using local cache: $e');
       return await _getLocalContentByCategory(category);
     }
   }
@@ -44,7 +44,7 @@ class HybridDatabaseService {
     try {
       return await _firestore.getContentById(id);
     } catch (e) {
-      print('Firestore unavailable, using local cache: $e');
+      AppLogger.warning('Firestore unavailable, using local cache: $e');
       return await _getLocalContentById(id);
     }
   }
@@ -122,7 +122,7 @@ class HybridDatabaseService {
     try {
       return await _firestore.getAllLearningPlans();
     } catch (e) {
-      print('Firestore unavailable, using local cache: $e');
+      AppLogger.warning('Firestore unavailable, using local cache: $e');
       return await _localDb.getAllLearningPlans();
     }
   }
@@ -160,9 +160,9 @@ class HybridDatabaseService {
       for (final content in firestoreContent) {
         await _cacheContentLocally(content);
       }
-      print('Content synced successfully');
+      AppLogger.success('Content synced successfully');
     } catch (e) {
-      print('Failed to sync content: $e');
+      AppLogger.error('Failed to sync content: $e');
     }
   }
 
@@ -171,7 +171,7 @@ class HybridDatabaseService {
     try {
       await _localDb.insertContent(content.toJson());
     } catch (e) {
-      print('Failed to cache content locally: $e');
+      AppLogger.error('Failed to cache content locally: $e');
     }
   }
 
@@ -205,9 +205,9 @@ class HybridDatabaseService {
       for (final plan in localPlans) {
         await _firestore.addLearningPlan(plan);
       }
-      print('Data migration completed');
+      AppLogger.success('Data migration completed');
     } catch (e) {
-      print('Migration failed: $e');
+      AppLogger.error('Migration failed: $e');
     }
   }
 }

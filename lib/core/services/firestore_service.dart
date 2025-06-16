@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/content.dart';
+import '../utils/logger.dart';
 
 class FirestoreService {
   static final FirestoreService _instance = FirestoreService._internal();
@@ -220,13 +221,13 @@ class FirestoreService {
 
       // Add sample content and learning plans
       // This will be called once during app initialization
-      print('Seeding Firestore with initial data...');
+      AppLogger.info('Seeding Firestore with initial data...');
       
       // You can add your seeding logic here
       // For now, we'll just mark it as ready for manual content addition
       
     } catch (e) {
-      print('Error seeding Firestore data: $e');
+      AppLogger.error('Error seeding Firestore data', e);
     }
   }
 }

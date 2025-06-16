@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sqflite/sqflite.dart';
 import '../../../core/models/user.dart';
 import '../../../core/services/firebase_auth_service.dart';
+import '../../../core/services/database_service.dart';
 
 // Current user provider
 final currentUserProvider = StateProvider<User?>((ref) => null);
@@ -146,7 +148,27 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
       
       // Medical profile updates will be handled by local database
       if (medicalProfile != null) {
-        // TODO: Update medical profile in local database
+        final currentUserId = FirebaseAuthService().currentUser?.id;
+        if (currentUserId != null) {
+          // Update medical profile in local database for privacy
+          await DatabaseService().database.then((db) async {
+            await db.insert(
+              'medical_profiles',
+              {
+                'id': medicalProfile.hashCode.toString(),
+                'user_id': currentUserId,
+                'diabetes_type': medicalProfile.diabetesType.name,
+                'diagnosis_date': medicalProfile.diagnosisDate?.millisecondsSinceEpoch,
+                'hba1c': medicalProfile.hba1c,
+                'complications': medicalProfile.complications.join(','),
+                'healthcare_provider': medicalProfile.healthcareProvider,
+                'created_at': medicalProfile.createdAt.millisecondsSinceEpoch,
+                'updated_at': medicalProfile.updatedAt.millisecondsSinceEpoch,
+              },
+              conflictAlgorithm: ConflictAlgorithm.replace,
+            );
+          });
+        }
       }
       
       if (success) {

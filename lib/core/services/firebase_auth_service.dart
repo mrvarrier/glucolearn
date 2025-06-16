@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user.dart' as app_user;
+import '../utils/logger.dart';
 
 class FirebaseAuthService {
   static final FirebaseAuthService _instance = FirebaseAuthService._internal();
@@ -50,7 +51,7 @@ class FirebaseAuthService {
         });
       }
     } catch (e) {
-      print('Error loading user data: $e');
+      AppLogger.error('Error loading user data', e);
     }
   }
 
@@ -202,7 +203,7 @@ class FirebaseAuthService {
       _currentUser!.updatedAt = DateTime.now();
       return true;
     } catch (e) {
-      print('Error updating user profile: $e');
+      AppLogger.error('Error updating user profile', e);
       return false;
     }
   }
@@ -301,7 +302,7 @@ class FirebaseAuthService {
       await _auth.currentUser!.delete();
       _currentUser = null;
     } catch (e) {
-      print('Error deleting account: $e');
+      AppLogger.error('Error deleting account', e);
     }
   }
 

@@ -6,6 +6,7 @@ import 'app/app.dart';
 import 'core/services/firebase_auth_service.dart';
 import 'core/services/firestore_service.dart';
 import 'core/services/data_seeding_service.dart';
+import 'core/utils/logger.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,18 +21,18 @@ void main() async {
     await FirebaseAuthService().initialize();
     await FirestoreService().seedFirestoreData();
     
-    print('✅ Firebase initialized successfully');
+    AppLogger.success('Firebase initialized successfully');
   } catch (e) {
-    print('⚠️ Firebase initialization failed: $e');
-    print('📱 App will run in local-only mode');
+    AppLogger.warning('Firebase initialization failed: $e');
+    AppLogger.info('App will run in local-only mode');
   }
   
   // Always seed local database for demo and offline functionality
   try {
     await DataSeedingService().seedDatabase();
-    print('✅ Local database seeded successfully');
+    AppLogger.success('Local database seeded successfully');
   } catch (e) {
-    print('❌ Local database seeding failed: $e');
+    AppLogger.error('Local database seeding failed', e);
   }
   
   runApp(
