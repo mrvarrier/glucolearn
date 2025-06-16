@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/services/firestore_service.dart';
 import '../../auth/providers/auth_providers.dart';
 
 class AdminDashboardPage extends ConsumerWidget {
@@ -102,54 +103,74 @@ class AdminDashboardPage extends ConsumerWidget {
             ),
             const SizedBox(height: AppDimensions.spaceMD),
             
-            Row(
-              children: [
-                Expanded(
-                  child: _buildOverviewCard(
-                    context,
-                    '156',
-                    'Total Users',
-                    Icons.people,
-                    AppColors.primary,
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.spaceMD),
-                Expanded(
-                  child: _buildOverviewCard(
-                    context,
-                    '43',
-                    'Content Items',
-                    Icons.article,
-                    AppColors.secondary,
-                  ),
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: AppDimensions.spaceMD),
-            
-            Row(
-              children: [
-                Expanded(
-                  child: _buildOverviewCard(
-                    context,
-                    '28',
-                    'Active Quizzes',
-                    Icons.quiz,
-                    AppColors.warning,
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.spaceMD),
-                Expanded(
-                  child: _buildOverviewCard(
-                    context,
-                    '12',
-                    'Learning Plans',
-                    Icons.school,
-                    AppColors.info,
-                  ),
-                ),
-              ],
+            // Real-time analytics from Firestore
+            FutureBuilder<Map<String, dynamic>>(
+              future: FirestoreService().getAnalytics(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                
+                final analytics = snapshot.data ?? {
+                  'totalUsers': 0,
+                  'totalContent': 0,
+                  'totalPlans': 0,
+                };
+                
+                return Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildOverviewCard(
+                            context,
+                            '${analytics['totalUsers'] ?? 0}',
+                            'Total Users',
+                            Icons.people,
+                            AppColors.primary,
+                          ),
+                        ),
+                        const SizedBox(width: AppDimensions.spaceMD),
+                        Expanded(
+                          child: _buildOverviewCard(
+                            context,
+                            '${analytics['totalContent'] ?? 0}',
+                            'Content Items',
+                            Icons.article,
+                            AppColors.secondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    
+                    const SizedBox(height: AppDimensions.spaceMD),
+                    
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildOverviewCard(
+                            context,
+                            '${analytics['totalPlans'] ?? 0}',
+                            'Learning Plans',
+                            Icons.school,
+                            AppColors.info,
+                          ),
+                        ),
+                        const SizedBox(width: AppDimensions.spaceMD),
+                        Expanded(
+                          child: _buildOverviewCard(
+                            context,
+                            'Live',
+                            'Real-time Data',
+                            Icons.cloud_done,
+                            AppColors.success,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
             ),
             
             const SizedBox(height: AppDimensions.spaceXL),

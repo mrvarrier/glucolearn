@@ -9,7 +9,7 @@ class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Content Management
-  Future<void> addContent(Content content) async {
+  Future<void> addContent(ContentItem content) async {
     try {
       await _firestore.collection('content').doc(content.id).set(content.toJson());
     } catch (e) {
@@ -17,7 +17,7 @@ class FirestoreService {
     }
   }
 
-  Future<void> updateContent(Content content) async {
+  Future<void> updateContent(ContentItem content) async {
     try {
       await _firestore.collection('content').doc(content.id).update(content.toJson());
     } catch (e) {
@@ -36,7 +36,7 @@ class FirestoreService {
     }
   }
 
-  Future<List<Content>> getAllContent() async {
+  Future<List<ContentItem>> getAllContent() async {
     try {
       final querySnapshot = await _firestore
           .collection('content')
@@ -45,14 +45,14 @@ class FirestoreService {
           .get();
 
       return querySnapshot.docs
-          .map((doc) => Content.fromJson({...doc.data(), 'id': doc.id}))
+          .map((doc) => ContentItem.fromJson({...doc.data(), 'id': doc.id}))
           .toList();
     } catch (e) {
       throw Exception('Failed to get content: $e');
     }
   }
 
-  Future<List<Content>> getContentByCategory(String category) async {
+  Future<List<ContentItem>> getContentByCategory(String category) async {
     try {
       final querySnapshot = await _firestore
           .collection('content')
@@ -62,18 +62,18 @@ class FirestoreService {
           .get();
 
       return querySnapshot.docs
-          .map((doc) => Content.fromJson({...doc.data(), 'id': doc.id}))
+          .map((doc) => ContentItem.fromJson({...doc.data(), 'id': doc.id}))
           .toList();
     } catch (e) {
       throw Exception('Failed to get content by category: $e');
     }
   }
 
-  Future<Content?> getContentById(String id) async {
+  Future<ContentItem?> getContentById(String id) async {
     try {
       final doc = await _firestore.collection('content').doc(id).get();
       if (doc.exists) {
-        return Content.fromJson({...doc.data()!, 'id': doc.id});
+        return ContentItem.fromJson({...doc.data()!, 'id': doc.id});
       }
       return null;
     } catch (e) {
@@ -171,14 +171,14 @@ class FirestoreService {
   }
 
   // Real-time streams for live updates
-  Stream<List<Content>> getContentStream() {
+  Stream<List<ContentItem>> getContentStream() {
     return _firestore
         .collection('content')
         .where('isActive', isEqualTo: true)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs
-            .map((doc) => Content.fromJson({...doc.data(), 'id': doc.id}))
+            .map((doc) => ContentItem.fromJson({...doc.data(), 'id': doc.id}))
             .toList());
   }
 
@@ -194,7 +194,7 @@ class FirestoreService {
   }
 
   // Batch operations
-  Future<void> batchAddContent(List<Content> contentList) async {
+  Future<void> batchAddContent(List<ContentItem> contentList) async {
     try {
       final batch = _firestore.batch();
       
