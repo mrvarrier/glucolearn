@@ -10,17 +10,29 @@ import 'core/services/data_seeding_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    // Initialize Firebase
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    
+    // Initialize Firebase services
+    await FirebaseAuthService().initialize();
+    await FirestoreService().seedFirestoreData();
+    
+    print('✅ Firebase initialized successfully');
+  } catch (e) {
+    print('⚠️ Firebase initialization failed: $e');
+    print('📱 App will run in local-only mode');
+  }
   
-  // Initialize services
-  await FirebaseAuthService().initialize();
-  await FirestoreService().seedFirestoreData();
-  
-  // Seed local database for demo purposes
-  await DataSeedingService().seedDatabase();
+  // Always seed local database for demo and offline functionality
+  try {
+    await DataSeedingService().seedDatabase();
+    print('✅ Local database seeded successfully');
+  } catch (e) {
+    print('❌ Local database seeding failed: $e');
+  }
   
   runApp(
     const ProviderScope(
