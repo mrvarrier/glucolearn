@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/user.dart';
-import '../../../core/services/auth_service.dart';
+import '../../../core/services/firebase_auth_service.dart';
 
 // Current user provider
 final currentUserProvider = StateProvider<User?>((ref) => null);
@@ -11,8 +11,8 @@ final authStateProvider = StateNotifierProvider<AuthStateNotifier, AuthState>((r
 });
 
 // Auth service provider
-final authServiceProvider = Provider<AuthService>((ref) {
-  return AuthService();
+final authServiceProvider = Provider<FirebaseAuthService>((ref) {
+  return FirebaseAuthService();
 });
 
 // Authentication state notifier
@@ -27,8 +27,8 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true);
     
     try {
-      await AuthService().initialize();
-      final currentUser = AuthService().currentUser;
+      await FirebaseAuthService().initialize();
+      final currentUser = FirebaseAuthService().currentUser;
       
       if (currentUser != null) {
         ref.read(currentUserProvider.notifier).state = currentUser;
@@ -54,7 +54,7 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
     
     try {
-      final result = await AuthService().signIn(email, password, rememberMe: rememberMe);
+      final result = await FirebaseAuthService().signIn(email, password);
       
       if (result.success) {
         ref.read(currentUserProvider.notifier).state = result.user;
@@ -85,7 +85,7 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
     
     try {
-      final result = await AuthService().signUp(
+      final result = await FirebaseAuthService().signUp(
         name: name,
         email: email,
         password: password,
@@ -116,7 +116,7 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true);
     
     try {
-      await AuthService().signOut();
+      await FirebaseAuthService().signOut();
       ref.read(currentUserProvider.notifier).state = null;
       
       state = state.copyWith(
@@ -139,14 +139,18 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true);
     
     try {
-      final success = await AuthService().updateUserProfile(
+      final success = await FirebaseAuthService().updateUserProfile(
         name: name,
-        medicalProfile: medicalProfile,
         preferences: preferences,
       );
       
+      // Medical profile updates will be handled by local database
+      if (medicalProfile != null) {
+        // TODO: Update medical profile in local database
+      }
+      
       if (success) {
-        final updatedUser = AuthService().currentUser;
+        final updatedUser = FirebaseAuthService().currentUser;
         ref.read(currentUserProvider.notifier).state = updatedUser;
       }
       

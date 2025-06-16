@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../core/services/auth_service.dart';
+import '../core/services/firebase_auth_service.dart';
 import '../core/models/user.dart';
 import '../features/auth/pages/login_page.dart';
 import '../features/auth/pages/signup_page.dart';
@@ -142,7 +142,7 @@ class AppRouter {
         name: 'admin',
         builder: (context, state) => const AdminDashboardPage(),
         redirect: (context, state) {
-          final authService = AuthService();
+          final authService = FirebaseAuthService();
           if (!authService.isAuthenticated || !authService.isAdmin) {
             return '/login';
           }
@@ -158,7 +158,7 @@ class AppRouter {
           child: DashboardPageSimple(),
         ),
         redirect: (context, state) {
-          final authService = AuthService();
+          final authService = FirebaseAuthService();
           if (!authService.isAuthenticated) {
             return '/login';
           }
@@ -169,7 +169,7 @@ class AppRouter {
   );
 
   static String? _redirect(BuildContext context, GoRouterState state) {
-    final authService = AuthService();
+    final authService = FirebaseAuthService();
     final isAuthenticated = authService.isAuthenticated;
     final currentUser = authService.currentUser;
     
