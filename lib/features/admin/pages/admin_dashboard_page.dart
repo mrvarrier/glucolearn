@@ -1,16 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../auth/providers/auth_providers.dart';
 
-class AdminDashboardPage extends StatelessWidget {
+class AdminDashboardPage extends ConsumerWidget {
   const AdminDashboardPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentUser = ref.watch(currentUserProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppStrings.adminPanel),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(AppStrings.adminPanel),
+            if (currentUser != null)
+              Text(
+                'Welcome, ${currentUser.name}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -32,6 +48,30 @@ class AdminDashboardPage extends StatelessWidget {
                 );
               }
             },
+          ),
+          PopupMenuButton<String>(
+            onSelected: (value) async {
+              switch (value) {
+                case 'logout':
+                  await ref.read(authStateProvider.notifier).signOut();
+                  if (context.mounted) {
+                    context.go('/login');
+                  }
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout),
+                    SizedBox(width: 8),
+                    Text('Logout'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

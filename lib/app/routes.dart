@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../core/services/auth_service.dart';
+import '../core/models/user.dart';
 import '../features/auth/pages/login_page.dart';
 import '../features/auth/pages/signup_page.dart';
 import '../features/onboarding/pages/welcome_page.dart';
@@ -160,6 +161,7 @@ class AppRouter {
                          state.uri.path == '/signup';
     final isOnOnboardingPages = state.uri.path == '/welcome' || 
                                state.uri.path == '/medical-info';
+    final isOnAdminPages = state.uri.path.startsWith('/admin');
     
     // If not authenticated and not on auth pages, redirect to login
     if (!isAuthenticated && !isOnAuthPages) {
@@ -169,13 +171,30 @@ class AppRouter {
     // If authenticated but user hasn't completed onboarding
     if (isAuthenticated && currentUser != null) {
       final hasCompletedOnboarding = currentUser.medicalProfile != null;
+      final isAdmin = currentUser.role == UserRole.admin;
       
-      if (!hasCompletedOnboarding && !isOnOnboardingPages) {
+      // Admin users skip onboarding and go straight to admin dashboard
+      if (isAdmin && !isOnAdminPages && !isOnAuthPages) {
+        return '/admin';
+      }
+      
+      // Patient users need to complete onboarding
+      if (!isAdmin && !hasCompletedOnboarding && !isOnOnboardingPages) {
         return '/welcome';
       }
       
       // If user completed onboarding but is still on auth/onboarding pages
-      if (hasCompletedOnboarding && (isOnAuthPages || isOnOnboardingPages)) {
+      if (!isAdmin && hasCompletedOnboarding && (isOnAuthPages || isOnOnboardingPages)) {
+        return '/';
+      }
+      
+      // If admin is on auth/onboarding pages, redirect to admin
+      if (isAdmin && (isOnAuthPages || isOnOnboardingPages)) {
+        return '/admin';
+      }
+      
+      // If patient tries to access admin pages, redirect to home
+      if (!isAdmin && isOnAdminPages) {
         return '/';
       }
     }
