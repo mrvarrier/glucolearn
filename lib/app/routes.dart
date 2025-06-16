@@ -149,6 +149,22 @@ class AppRouter {
           return null;
         },
       ),
+      
+      // Patient dashboard accessible by admins
+      GoRoute(
+        path: '/patient-dashboard',
+        name: 'patient-dashboard',
+        builder: (context, state) => const MainNavigationPage(
+          child: DashboardPageSimple(),
+        ),
+        redirect: (context, state) {
+          final authService = AuthService();
+          if (!authService.isAuthenticated) {
+            return '/login';
+          }
+          return null;
+        },
+      ),
     ],
   );
 

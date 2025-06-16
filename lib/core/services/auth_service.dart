@@ -106,6 +106,7 @@ class AuthService {
     required String name,
     required String email,
     required String password,
+    UserRole role = UserRole.patient,
   }) async {
     try {
       // Check if user already exists
@@ -134,7 +135,7 @@ class AuthService {
         'email': email.toLowerCase(),
         'password_hash': hashedPassword,
         'name': name,
-        'role': UserRole.patient.name,
+        'role': role.name,
         'created_at': now.millisecondsSinceEpoch,
         'updated_at': now.millisecondsSinceEpoch,
         'is_active': 1,
@@ -148,7 +149,7 @@ class AuthService {
         email: email.toLowerCase(),
         name: name,
         passwordHash: hashedPassword,
-        role: UserRole.patient,
+        role: role,
         createdAt: now,
         updatedAt: now,
         isActive: true,

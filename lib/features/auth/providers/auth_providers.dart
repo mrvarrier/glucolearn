@@ -80,6 +80,7 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
     required String name,
     required String email,
     required String password,
+    UserRole role = UserRole.patient,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     
@@ -88,6 +89,7 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
         name: name,
         email: email,
         password: password,
+        role: role,
       );
       
       if (result.success) {

@@ -52,6 +52,11 @@ class AdminDashboardPage extends ConsumerWidget {
           PopupMenuButton<String>(
             onSelected: (value) async {
               switch (value) {
+                case 'patient_view':
+                  if (context.mounted) {
+                    context.go('/patient-dashboard');
+                  }
+                  break;
                 case 'logout':
                   await ref.read(authStateProvider.notifier).signOut();
                   if (context.mounted) {
@@ -61,6 +66,16 @@ class AdminDashboardPage extends ConsumerWidget {
               }
             },
             itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'patient_view',
+                child: Row(
+                  children: [
+                    Icon(Icons.school),
+                    SizedBox(width: 8),
+                    Text('Patient View'),
+                  ],
+                ),
+              ),
               const PopupMenuItem(
                 value: 'logout',
                 child: Row(

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/models/user.dart';
+import '../../auth/providers/auth_providers.dart';
 
-class MainNavigationPage extends StatelessWidget {
+class MainNavigationPage extends ConsumerWidget {
   final Widget child;
 
   const MainNavigationPage({
@@ -12,8 +15,24 @@ class MainNavigationPage extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentUser = ref.watch(currentUserProvider);
+    final isAdmin = currentUser?.role == UserRole.admin;
     return Scaffold(
+      appBar: isAdmin ? AppBar(
+        title: const Text('Patient View'),
+        backgroundColor: AppColors.warning.withOpacity(0.1),
+        actions: [
+          TextButton.icon(
+            onPressed: () => context.go('/admin'),
+            icon: const Icon(Icons.admin_panel_settings),
+            label: const Text('Admin Dashboard'),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primary,
+            ),
+          ),
+        ],
+      ) : null,
       body: child,
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,

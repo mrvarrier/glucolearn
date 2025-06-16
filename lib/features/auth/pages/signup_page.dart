@@ -6,6 +6,7 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/models/user.dart';
 import '../../../core/services/auth_service.dart';
 import '../providers/auth_providers.dart';
 
@@ -31,28 +32,29 @@ class _SignupPageState extends ConsumerState<SignupPage> {
     final name = formData['name'] as String;
     final email = formData['email'] as String;
     final password = formData['password'] as String;
+    final roleString = formData['role'] as String? ?? 'patient';
+    final role = UserRole.values.byName(roleString);
 
     try {
-      final result = await AuthService().signUp(
+      await ref.read(authStateProvider.notifier).signUp(
         name: name,
         email: email,
         password: password,
+        role: role,
       );
 
-      if (result.success) {
-        ref.read(currentUserProvider.notifier).state = result.user;
-        if (mounted) {
-          context.go('/welcome');
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result.message),
-              backgroundColor: AppColors.error,
-            ),
-          );
-        }
+      // Check if signup was successful
+      final authState = ref.read(authStateProvider);
+      if (authState.isAuthenticated && mounted) {
+        // Role-based redirect will be handled by the router
+        context.go('/');
+      } else if (authState.error != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authState.error!),
+            backgroundColor: AppColors.error,
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -164,6 +166,29 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                         FormBuilderValidators.required(),
                         FormBuilderValidators.minLength(6),
                       ]),
+                    ),
+                    
+                    const SizedBox(height: AppDimensions.spaceMD),
+                    
+                    FormBuilderDropdown<String>(
+                      name: 'role',
+                      decoration: const InputDecoration(
+                        labelText: 'Account Type',
+                        hintText: 'Select your account type',
+                        prefixIcon: Icon(Icons.person_outlined),
+                      ),
+                      initialValue: 'patient',
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'patient',
+                          child: Text('Patient'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'admin',
+                          child: Text('Administrator'),
+                        ),
+                      ],
+                      validator: FormBuilderValidators.required(),
                     ),
                     
                     const SizedBox(height: AppDimensions.spaceMD),
