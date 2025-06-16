@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/models/user.dart';
 import '../../auth/providers/auth_providers.dart';
 
 class ProfilePage extends ConsumerWidget {
@@ -12,6 +13,7 @@ class ProfilePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentUser = ref.watch(currentUserProvider);
+    final isAdmin = currentUser?.role == UserRole.admin;
 
     return Scaffold(
       appBar: AppBar(
@@ -70,7 +72,7 @@ class ProfilePage extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
                       ),
                       child: Text(
-                        _getDiabetesTypeDisplay(currentUser?.medicalProfile?.diabetesType),
+                        isAdmin ? 'Administrator' : _getDiabetesTypeDisplay(currentUser?.medicalProfile?.diabetesType),
                         style: Theme.of(context).textTheme.labelMedium?.copyWith(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,
@@ -84,70 +86,94 @@ class ProfilePage extends ConsumerWidget {
             
             const SizedBox(height: AppDimensions.spaceLG),
             
-            // Medical Information Section
-            _buildSection(
-              context,
-              AppStrings.medicalProfile,
-              Icons.medical_information_outlined,
-              [
-                _buildInfoItem(
-                  context,
-                  'Diabetes Type',
-                  _getDiabetesTypeDisplay(currentUser?.medicalProfile?.diabetesType),
-                  Icons.info_outline,
-                ),
-                if (currentUser?.medicalProfile?.diagnosisDate != null)
+            // Medical Information Section (only for patients)
+            if (!isAdmin)
+              _buildSection(
+                context,
+                AppStrings.medicalProfile,
+                Icons.medical_information_outlined,
+                [
                   _buildInfoItem(
                     context,
-                    'Diagnosis Date',
-                    _formatDate(currentUser!.medicalProfile!.diagnosisDate!),
+                    'Diabetes Type',
+                    _getDiabetesTypeDisplay(currentUser?.medicalProfile?.diabetesType),
+                    Icons.info_outline,
+                  ),
+                  if (currentUser?.medicalProfile?.diagnosisDate != null)
+                    _buildInfoItem(
+                      context,
+                      'Diagnosis Date',
+                      _formatDate(currentUser!.medicalProfile!.diagnosisDate!),
+                      Icons.calendar_today_outlined,
+                    ),
+                  if (currentUser?.medicalProfile?.hba1c != null)
+                    _buildInfoItem(
+                      context,
+                      'HbA1c Level',
+                      '${currentUser!.medicalProfile!.hba1c}%',
+                      Icons.analytics_outlined,
+                    ),
+                  if (currentUser?.medicalProfile?.healthcareProvider != null)
+                    _buildInfoItem(
+                      context,
+                      'Healthcare Provider',
+                      currentUser!.medicalProfile!.healthcareProvider!,
+                      Icons.local_hospital_outlined,
+                    ),
+                ],
+              ),
+            
+            // Admin Information Section (only for admins)
+            if (isAdmin)
+              _buildSection(
+                context,
+                'Admin Information',
+                Icons.admin_panel_settings_outlined,
+                [
+                  _buildInfoItem(
+                    context,
+                    'Role',
+                    'Administrator',
+                    Icons.security_outlined,
+                  ),
+                  _buildInfoItem(
+                    context,
+                    'Account Created',
+                    _formatDate(currentUser?.createdAt ?? DateTime.now()),
                     Icons.calendar_today_outlined,
                   ),
-                if (currentUser?.medicalProfile?.hba1c != null)
+                ],
+              ),
+            
+            if (!isAdmin) const SizedBox(height: AppDimensions.spaceLG),
+            
+            // Learning Preferences Section (only for patients)
+            if (!isAdmin)
+              _buildSection(
+                context,
+                'Learning Preferences',
+                Icons.school_outlined,
+                [
                   _buildInfoItem(
                     context,
-                    'HbA1c Level',
-                    '${currentUser!.medicalProfile!.hba1c}%',
-                    Icons.analytics_outlined,
+                    'Daily Learning Goal',
+                    '${currentUser?.preferences?.dailyLearningGoalMinutes ?? 30} minutes',
+                    Icons.timer_outlined,
                   ),
-                if (currentUser?.medicalProfile?.healthcareProvider != null)
                   _buildInfoItem(
                     context,
-                    'Healthcare Provider',
-                    currentUser!.medicalProfile!.healthcareProvider!,
-                    Icons.local_hospital_outlined,
+                    'Experience Level',
+                    _capitalizeFirst(currentUser?.preferences?.difficultyLevel ?? 'Beginner'),
+                    Icons.psychology_outlined,
                   ),
-              ],
-            ),
-            
-            const SizedBox(height: AppDimensions.spaceLG),
-            
-            // Learning Preferences Section
-            _buildSection(
-              context,
-              'Learning Preferences',
-              Icons.school_outlined,
-              [
-                _buildInfoItem(
-                  context,
-                  'Daily Learning Goal',
-                  '${currentUser?.preferences?.dailyLearningGoalMinutes ?? 30} minutes',
-                  Icons.timer_outlined,
-                ),
-                _buildInfoItem(
-                  context,
-                  'Experience Level',
-                  _capitalizeFirst(currentUser?.preferences?.difficultyLevel ?? 'Beginner'),
-                  Icons.psychology_outlined,
-                ),
-                _buildInfoItem(
-                  context,
-                  'Notifications',
-                  currentUser?.preferences?.notificationsEnabled == true ? 'Enabled' : 'Disabled',
-                  Icons.notifications_outlined,
-                ),
-              ],
-            ),
+                  _buildInfoItem(
+                    context,
+                    'Notifications',
+                    currentUser?.preferences?.notificationsEnabled == true ? 'Enabled' : 'Disabled',
+                    Icons.notifications_outlined,
+                  ),
+                ],
+              ),
             
             const SizedBox(height: AppDimensions.spaceLG),
             
